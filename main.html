@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crucigrama de Informática</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #ddd;
+            --cell-size: 40px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+            font-size: 2rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .crossword-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .crossword-grid {
+            display: grid;
+            grid-template-columns: repeat(20, var(--cell-size));
+            grid-gap: 0;
+            margin-bottom: 20px;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background-color: white;
+            font-size: 18px;
+            text-transform: uppercase;
+            transition: background-color 0.3s;
+        }
+
+        .cell.active {
+            background-color: rgba(52, 152, 219, 0.2);
+        }
+
+        .cell.correct {
+            background-color: rgba(46, 204, 113, 0.2);
+        }
+
+        .cell.incorrect {
+            background-color: rgba(231, 76, 60, 0.2);
+        }
+
+        .cell.empty {
+            background-color: #222;
+        }
+
+        .cell-number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 10px;
+            color: var(--light-text);
+        }
+
+        .cell input {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 18px;
+            text-transform: uppercase;
+            outline: none;
+        }
+
+        .clues {
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .clues h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .clue {
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .clue:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+
+        .clue.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            grid-column: 1 / -1;
+            justify-content: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        button.check {
+            background-color: var(--secondary-color);
+        }
+
+        button.check:hover {
+            background-color: #27ae60;
+        }
+
+        button.reset {
+            background-color: var(--accent-color);
+        }
+
+        button.reset:hover {
+            background-color: #c0392b;
+        }
+
+        .score-container {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+        
+        .score {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .celebrate {
+            animation: celebrate 0.5s ease-in-out;
+        }
+        
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            top: -10px;
+            z-index: 999;
+        }
+        
+        .completion-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+        }
+        
+        .completion-message h2 {
+            color: var(--primary-color);
+        }
+        
+        .completion-message p {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>Crucigrama de Informática</h1>
+        
+        <div class="crossword-container">
+            <div class="crossword-grid" id="crossword"></div>
+        </div>
+        
+        <div class="clues">
+            <h2>Pistas</h2>
+            <div id="clueList"></div>
+        </div>
+        
+        <div class="buttons">
+            <button class="check" id="checkButton">Verificar</button>
+            <button class="reset" id="resetButton">Reiniciar</button>
+            <button id="hintButton">Pista</button>
+        </div>
+        
+        <div class="score-container">
+            Puntuación: <span class="score" id="score">0</span> / 10
+        </div>
+    </div>
+    
+    <div class="completion-message" id="completionMessage">
+        <h2>¡Felicidades!</h2>
+        <p>Has completado el crucigrama correctamente.</p>
+        <button id="closeCompletionMessage">Cerrar</button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+    // Definición del crucigrama
+    const crosswordData = {
+        width: 20,
+        height: 20,
+        words: [
+            { word: 'MULTIPROGRAMACION', clue: '1. Ejecución simultánea de programas', row: 18, col: 2, direction: 'across' },
+            { word: 'SISTEMAOPERATIVO', clue: '2. Sistema que funciona continuamente y tiene acceso a todos los datos procesados y a los recursos usados por todos los programas', row: 3, col: 9, direction: 'down' },
+            { word: 'MONITORRESIDENTE', clue: '3. Permite la transferencia automática de un trabajo a otro. Puede ser considerado como la más primitiva forma de sistema operativo', row: 13, col: 2, direction: 'across' },
+            { word: 'MAQUINAVIRTUAL', clue: '4. Software que simula a una computadora y puede ejecutar programas como si fuese una computadora real', row: 3, col: 6, direction: 'down' },
+            { word: 'APLICACIONES', clue: '5. Son programas que resuelven problemas concretos de los usuarios y son diseñados por analistas, programadores, o usuarios', row: 3, col: 14, direction: 'down' },
+            { word: 'TRANSISTOR', clue: '6. Elemento principal de hardware en la segunda generación de computadores', row: 6, col: 9, direction: 'across' },
+            { word: 'SEGURIDAD', clue: '7. Restringir determinadas operaciones a los usuarios creando niveles de privilegio con el fin de proteger la información', row: 8, col: 12, direction: 'down' },
+            { word: 'OFFLINE', clue: '8. Técnica que permite hacer procesos fuera de línea, es decir, realizados fuera de la máquina', row: 8, col: 4, direction: 'down' },
+            { word: 'BUFFER', clue: '9. Espacio de memoria en el que se almacenan datos de manera temporal, para luego ser procesados', row: 9, col: 17, direction: 'down' },
+            { word: 'SPOOL', clue: '10. Operación simultánea de periféricos en línea', row: 3, col: 17, direction: 'down' }
+        ]
+    };
+
+    
+
+    const crosswordEl = document.getElementById('crossword');
+    const clueListEl = document.getElementById('clueList');
+    const checkButton = document.getElementById('checkButton');
+    const resetButton = document.getElementById('resetButton');
+    const hintButton = document.getElementById('hintButton');
+    const scoreEl = document.getElementById('score');
+    const completionMessageEl = document.getElementById('completionMessage');
+    const closeCompletionMessageBtn = document.getElementById('closeCompletionMessage');
+    
+    let grid = [];
+    let cells = [];
+    let activeWord = null;
+    let score = 0;
+    
+    // Inicializar la cuadrícula
+    function initGrid() {
+        grid = Array(crosswordData.height).fill().map(() => Array(crosswordData.width).fill(null));
+        cells = [];
+        
+        // Crear celdas vacías
+        for (let i = 0; i < crosswordData.height; i++) {
+            for (let j = 0; j < crosswordData.width; j++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell empty';
+                cell.dataset.row = i;
+                cell.dataset.col = j;
+                crosswordEl.appendChild(cell);
+                cells.push(cell);
+            }
+        }
+        
+        // Colocar palabras en la cuadrícula
+        crosswordData.words.forEach((wordData, index) => {
+            const { word, row, col, direction } = wordData;
+            
+            for (let i = 0; i < word.length; i++) {
+                const r = direction === 'across' ? row : row + i;
+                const c = direction === 'across' ? col + i : col;
+                
+                if (r < crosswordData.height && c < crosswordData.width) {
+                    const cellIndex = r * crosswordData.width + c;
+                    const cell = cells[cellIndex];
+                    
+                    if (cell) {
+                        cell.className = cell.className.replace('empty', '').trim();
+                        
+                        if (!cell.querySelector('input')) {
+                            const input = document.createElement('input');
+                            input.maxLength = 1;
+                            input.dataset.row = r;
+                            input.dataset.col = c;
+                            input.dataset.wordIndex = index;
+                            input.dataset.charIndex = i;
+                            input.dataset.solution = word[i];
+                            cell.appendChild(input);
+                            
+                            // Añadir número de palabra
+                            if (i === 0) {
+                                const number = document.createElement('span');
+                                number.className = 'cell-number';
+                                number.textContent = wordData.clue.split('.')[0];
+                                cell.appendChild(number);
+                            }
+                            
+                            // Manejar eventos de entrada
+                            input.addEventListener('focus', function() {
+                                highlightWord(index);
+                            });
+                            
+                            input.addEventListener('input', function() {
+                                this.value = this.value.toUpperCase();
+                                
+                                // Mover al siguiente campo
+                                if (this.value) {
+                                    const nextInput = getNextInput(r, c, direction);
+                                    if (nextInput) {
+                                        nextInput.focus();
+                                    }
+                                }
+                            });
+                            
+                            input.addEventListener('keydown', function(e) {
+                                if (e.key === 'Backspace' && !this.value) {
+                                    e.preventDefault();
+                                    const prevInput = getPrevInput(r, c, direction);
+                                    if (prevInput) {
+                                        prevInput.value = '';
+                                        prevInput.focus();
+                                    }
+                                } else if (e.key === 'ArrowRight') {
+                                    e.preventDefault();
+                                    const nextInput = getNextInputHorizontal(r, c);
+                                    if (nextInput) nextInput.focus();
+                                } else if (e.key === 'ArrowLeft') {
+                                    e.preventDefault();
+                                    const prevInput = getPrevInputHorizontal(r, c);
+                                    if (prevInput) prevInput.focus();
+                                } else if (e.key === 'ArrowDown') {
+                                    e.preventDefault();
+                                    const nextInput = getNextInputVertical(r, c);
+                                    if (nextInput) nextInput.focus();
+                                } else if (e.key === 'ArrowUp') {
+                                    e.preventDefault();
+                                    const prevInput = getPrevInputVertical(r, c);
+                                    if (prevInput) prevInput.focus();
+                                }
+                            });
+                        }
+                        
+                        grid[r][c] = { 
+                            wordIndex: index,
+                            charIndex: i,
+                            solution: word[i]
+                        };
+                    }
+                }
+            }
+        });
+        
+        // Crear lista de pistas
+        crosswordData.words.forEach((wordData, index) => {
+            const clueItem = document.createElement('div');
+            clueItem.className = 'clue';
+            clueItem.textContent = wordData.clue;
+            clueItem.dataset.index = index;
+            clueListEl.appendChild(clueItem);
+            
+            clueItem.addEventListener('click', function() {
+                highlightWord(index);
+                // Enfocar en la primera letra de la palabra
+                const firstCell = findCellByWordAndChar(index, 0);
+                if (firstCell && firstCell.querySelector('input')) {
+                    firstCell.querySelector('input').focus();
+                }
+            });
+        });
+    }
+    
+    // Funciones auxiliares
+    function findCellByRowCol(row, col) {
+        return cells[row * crosswordData.width + col];
+    }
+    
+    function findCellByWordAndChar(wordIndex, charIndex) {
+        const wordData = crosswordData.words[wordIndex];
+        const r = wordData.direction === 'across' ? wordData.row : wordData.row + charIndex;
+        const c = wordData.direction === 'across' ? wordData.col + charIndex : wordData.col;
+        return findCellByRowCol(r, c);
+    }
+    
+    function getNextInput(row, col, direction) {
+        const nextRow = direction === 'across' ? row : row + 1;
+        const nextCol = direction === 'across' ? col + 1 : col;
+        const cell = findCellByRowCol(nextRow, nextCol);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function getPrevInput(row, col, direction) {
+        const prevRow = direction === 'across' ? row : row - 1;
+        const prevCol = direction === 'across' ? col - 1 : col;
+        const cell = findCellByRowCol(prevRow, prevCol);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function getNextInputHorizontal(row, col) {
+        const cell = findCellByRowCol(row, col + 1);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function getPrevInputHorizontal(row, col) {
+        const cell = findCellByRowCol(row, col - 1);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function getNextInputVertical(row, col) {
+        const cell = findCellByRowCol(row + 1, col);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function getPrevInputVertical(row, col) {
+        const cell = findCellByRowCol(row - 1, col);
+        return cell ? cell.querySelector('input') : null;
+    }
+    
+    function highlightWord(wordIndex) {
+        // Quitar resaltado anterior
+        cells.forEach(cell => {
+            cell.classList.remove('active');
+        });
+        
+        document.querySelectorAll('.clue').forEach(clue => {
+            clue.classList.remove('active');
+        });
+        
+        // Resaltar palabra actual
+        const wordData = crosswordData.words[wordIndex];
+        const { word, row, col, direction } = wordData;
+        
+        for (let i = 0; i < word.length; i++) {
+            const r = direction === 'across' ? row : row + i;
+            const c = direction === 'across' ? col + i : col;
+            const cell = findCellByRowCol(r, c);
+            if (cell) {
+                cell.classList.add('active');
+            }
+        }
+        
+        // Resaltar pista
+        const clue = document.querySelector(`.clue[data-index="${wordIndex}"]`);
+        if (clue) {
+            clue.classList.add('active');
+            clue.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        activeWord = wordIndex;
+    }
+    
+    function checkAnswers() {
+        let correct = 0;
+        let total = 0;
+        
+        cells.forEach(cell => {
+            const input = cell.querySelector('input');
+            if (input) {
+                cell.classList.remove('correct', 'incorrect');
+                total++;
+                
+                if (input.value.toUpperCase() === input.dataset.solution) {
+                    cell.classList.add('correct');
+                    correct++;
+                } else if (input.value) {
+                    cell.classList.add('incorrect');
+                }
+            }
+        });
+        
+        score = Math.round((correct / total) * 10);
+        scoreEl.textContent = score;
+        
+        if (score === 10) {
+            showCompletionMessage();
+            celebrateCompletion();
+        }
+    }
+    
+    function resetCrossword() {
+        cells.forEach(cell => {
+            const input = cell.querySelector('input');
+            if (input) {
+                input.value = '';
+                cell.classList.remove('correct', 'incorrect');
+            }
+        });
+        
+        score = 0;
+        scoreEl.textContent = score;
+    }
+    
+    function provideHint() {
+        if (activeWord !== null) {
+            const wordData = crosswordData.words[activeWord];
+            const { word, row, col, direction } = wordData;
+            
+            // Encontrar una celda vacía o incorrecta
+            for (let i = 0; i < word.length; i++) {
+                const r = direction === 'across' ? row : row + i;
+                const c = direction === 'across' ? col + i : col;
+                const cell = findCellByRowCol(r, c);
+                
+                if (cell) {
+                    const input = cell.querySelector('input');
+                    if (input && (!input.value || input.value.toUpperCase() !== input.dataset.solution)) {
+                        input.value = input.dataset.solution;
+                        input.focus();
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    
+    function celebrateCompletion() {
+        for (let i = 0; i < 50; i++) {
+            createConfetti();
+        }
+    }
+    
+    function createConfetti() {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        
+        // Color aleatorio
+        const colors = ['#f00', '#0f0', '#00f', '#ff0', '#f0f', '#0ff'];
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Posición inicial aleatoria
+        const left = Math.random() * window.innerWidth;
+        confetti.style.left = `${left}px`;
+        
+        document.body.appendChild(confetti);
+        
+        // Animación
+        const duration = Math.random() * 3000 + 2000;
+        const rotation = Math.random() * 360;
+        const scale = Math.random() * 0.6 + 0.4;
+        
+        confetti.animate([
+            { transform: `translate(0, 0) rotate(0deg) scale(${scale})` },
+            { transform: `translate(${Math.random() * 100 - 50}px, ${window.innerHeight}px) rotate(${rotation}deg) scale(${scale})` }
+        ], {
+            duration: duration,
+            easing: 'cubic-bezier(0, 1, 1, 0)'
+        });
+        
+        setTimeout(() => {
+            document.body.removeChild(confetti);
+        }, duration);
+    }
+    
+    function showCompletionMessage() {
+        completionMessageEl.style.display = 'block';
+    }
+    
+    // Inicializar el crucigrama
+    initGrid();
+    
+    // Event listeners
+    checkButton.addEventListener('click', checkAnswers);
+    resetButton.addEventListener('click', resetCrossword);
+    hintButton.addEventListener('click', provideHint);
+    closeCompletionMessageBtn.addEventListener('click', function() {
+        completionMessageEl.style.display = 'none';
+    });
+});
+    </script>
+</body>       
+</html>
