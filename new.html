@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crucigrama Original</title>
+    <title>Arnovigrama</title>
     <style>
         :root {
             --primary-color: #3498db;
@@ -16,6 +16,38 @@
             --border-color: #ddd;
             --cell-size: 40px;
         }
+
+
+        .header-info {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            grid-column: 1 / -1;
+        }
+
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .custom-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s;
+            display: inline-block;
+            padding: 5px 0;
+        }
+
+        .custom-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+
+
+
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -250,15 +282,23 @@
 <body>
 
     <div class="container">
-
-        <div> <br>
-            <p>Crucigrama basado en "Conceptos Básicos de S.O" de Gloria Lorena Sandoval Gallego</p>
+        <div class="header-info">
             <br>
-            <a target="_blank"
-                href="https://www.educaplay.com/learning-resources/1744657-conceptos_basicos_de_s_o.html">Visite el
-                crucigrama original aquí</a>
+            <p>Actividad realizada en base a los conceptos estudiados en el primer corte de Sistemas operativos</p>
+            
+            <ul>
+                <li><b>Estudiante:</b> Arnovi Antonio Jimenez Velasquez</li>
+                <li><b>Materia:</b> Sistemas Operativos - Gr2 </li>
+                <li><b>Docente:</b> Juan De Jesus Veloza Mora </li>
+            </ul>
+
+            <br>
+            <div class="links-container">
+                <a class="custom-link" target="_blank"
+                    href="https://blanchedalmond-koala-467994.hostingersite.com">Visite el crucigrama de Gloria Elena aquí</a>
+            </div>
         </div>
-        <h1>Crucigrama Original</h1>
+        <h1>Arnovigrama</h1>
 
 
 
